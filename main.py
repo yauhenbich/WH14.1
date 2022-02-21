@@ -12,45 +12,43 @@ def db_connect(db,query):
     cur = con.cursor()
     cur.execute(query)
     result = cur.fetchall()
-    print(result)
     con.close()
     return result
 
-@app.route('/movie/title')
+@app.route("/movie/title")
 def search_title():
-    # return 'test'
-    if request.nethod == 'GET':
-        resource = {}
+    if request.method == 'GET':
+        responce = {}
         title = request.args.get('title')
         if title:
             query = f"""
-            select
+                SELECT
                 title,
                 country,
                 listed_in,
                 release_year,
                 description
-            from netflix
-            where title = '{title}'
-            order by release_year DESC
-            LIMIT 1
+                FROM netflix
+                WHERE title = '{title}'
+                ORDER BY release_year DESC
+                LIMIT 1
             """
             result = db_connect('netflix.db', query)
-        if len(result):
-                response = {
+            if len(result):
+                responce = {
                     "title" : result[0][0],
                     "country" : result[0][0],
                     "listed_in" : result[0][0],
                     "release_year" : result[0][0],
                     "description" : result[0][0],
                 }
-        return jsonify(response)
+        return jsonify(responce)
 
 
-@app.route('/movie/yea/')
+@app.route("/movie/year/")
 def search_year():
-    if request.nethod == 'GET':
-        resource = []
+    if request.method == 'GET':
+        responce = []
         start_year = request.args.get('start_year')
         end_year = request.args.get('end_year')
         if start_year and end_year:
@@ -64,20 +62,20 @@ def search_year():
             for line in result:
                 line_dict = {
                     "title": line[0],
-                    "release_year": line[0],
+                    "release_year": line[1],
                 }
-                response.append(line_dict)
-            return  jsonify(response)
+                responce.append(line_dict)
+    return  jsonify(responce)
 
 
-def get_raling(rating):
-    response = []
-    if len(rating)>1:
+def get_rating(rating):
+    responce = []
+    if len(rating) > 1:
         str_rating = "','".join(rating)
     else:
         str_rating = "".join(rating)
-    print(str_rating)
-    query = f""" SELECT 'title', 'country', 'release_year', 'listed_in', 'description', 'rating'
+
+    query = f""" SELECT title, description
                 FROM netflix
                 WHERE rating in ('{str_rating}')
                 LIMIT 100"""
@@ -86,43 +84,44 @@ def get_raling(rating):
         line_dict = {
             "title": line[0],
             "rating": line[1],
-            "description": line[2]
+            "description": line[2],
         }
-        response.append(line_dict)
-    return response
+        responce.append(line_dict)
+    return responce
 
 
-@app.route('/rating/children/')
+@app.route("/rating/children/")
 def rating_children():
-    response = get_rating(['G'])
-    return jsonify(response)
+    rating = get_rating(['G'])
+    return jsonify(rating)
 
-@app.route('/rating/family/')
+@app.route("/rating/family/")
 def rating_family():
-    response = get_rating(['PG','PG13'])
-    return jsonify(response)
+    rating = get_rating(['PG','PG13'])
+    return jsonify(rating)
 
-@app.route('/rating/adult/')
+@app.route("/rating/adult/")
 def rating_adult():
-    response = get_rating(['R', 'NC-17'])
-    return jsonify(response)
+    rating = get_rating(['R', 'NC-17'])
+    return jsonify(rating)
 
 
-@app.route('/genre/<genre>')
+@app.route("/genre/<genre>")
 def search_genre(genre):
-    query = f"""SELECT title, description FROM netflix
-            WHERE listed_in like "%{genre}%"
-            ORDER BY relea_year DESC
+    query = f"""SELECT title, description
+            FROM netflix
+            WHERE listed_in like '%{genre}%'
+            ORDER BY release_year DESC
             LIMIT 10"""
     result = db_connect('netflix.db', query)
-    response = []
+    responce = []
     for line in result:
         line_dict ={
             "title": line[0],
-            "description": line[1]
+            "description": line[1],
         }
-        response.append(line_dict)
-    return jsonify(response)
+        responce.append(line_dict)
+    return jsonify(responce)
 
 def search_pair (actor1, actor2):
     query = f"""SELECT [cast]
@@ -141,7 +140,7 @@ def search_pair (actor1, actor2):
     return actors_list
 
 def search(type_, release_year, listed_in):
-    query = f"""SELECT title, DESCRIPTION
+    query = f"""SELECT title, description
                 FROM netflix
                 WHERE type = '{type_}' AND release_year = '{release_year}' AND listed_in LIKE '%{listed_in}%'
                 """
@@ -158,5 +157,5 @@ def search(type_, release_year, listed_in):
 
 print(search('Movie', '2016', 'comedies'))
 
-app.run (debug=True, port=8000)
+app.run ()
 
