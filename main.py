@@ -15,7 +15,7 @@ def db_connect(db,query):
     con.close()
     return result
 
-@app.route("/movie/title")
+@app.route("/movie/title/")
 def search_title():
     if request.method == 'GET':
         responce = {}
@@ -75,7 +75,7 @@ def get_rating(rating):
     else:
         str_rating = "".join(rating)
 
-    query = f""" SELECT title, description
+    query = f""" SELECT title, description, rating
                 FROM netflix
                 WHERE rating in ('{str_rating}')
                 LIMIT 100"""
@@ -106,7 +106,7 @@ def rating_adult():
     return jsonify(rating)
 
 
-@app.route("/genre/<genre>")
+@app.route("/genre/<genre>/")
 def search_genre(genre):
     query = f"""SELECT title, description
             FROM netflix
